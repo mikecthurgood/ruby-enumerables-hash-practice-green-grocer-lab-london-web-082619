@@ -1,3 +1,5 @@
+require "pry"
+
 def consolidate_cart(cart)
   consolidated_cart = {}
   cart.each do |shopping|
@@ -11,30 +13,51 @@ def consolidate_cart(cart)
    end
   end
    consolidated_cart
-  end
 end
-
-# [
-#     {"AVOCADO" => {:price => 3.00, :clearance => true}},
-#     {"KALE" => {:price => 3.00, :clearance => false}},
-#     {"BLACK_BEANS" => {:price => 2.50, :clearance => false}},
-#     {"ALMONDS" => {:price => 9.00, :clearance => false}},
-#     {"TEMPEH" => {:price => 3.00, :clearance => true}},
-#     {"CHEESE" => {:price => 6.50, :clearance => false}},
-#     {"BEER" => {:price => 13.00, :clearance => false}},
-#     {"PEANUTBUTTER" => {:price => 3.00, :clearance => true}},
-#     {"BEETS" => {:price => 2.50, :clearance => false}},
-#     {"SOY MILK" => {:price => 4.50, :clearance => true}}
-# ]
 
 def apply_coupons(cart, coupons)
-  # code here
+  coupons.each do |coupon|
+     item = coupon[:item]
+     if cart[item] && cart[item][:count] >= coupon[:num]  
+
+        if cart["#{item} W/COUPON"]
+          cart["#{item} W/COUPON"][:count] += coupon[:num]
+
+        else 
+           cart["#{item} W/COUPON"] = { 
+             price: coupon[:cost] / coupon[:num],
+             clearance: cart[item][:clearance],
+             count: coupon[:num]
+           }
+       end
+       cart[item][:count] -= coupon[:num]
+     end
+   end
+   cart
 end
 
+
+
 def apply_clearance(cart)
-  # code here
+  cart.each do |item, details|
+    if details[:clearance] === true
+      details[:price] = (details[:price] * 0.8).round(2)
+    end
+  end
+  cart
 end
 
 def checkout(cart, coupons)
-  # code here
+  consolidated_cart = consolidate_cart(cart)
+  applied_coupons = apply_coupons(consolidated_cart, coupons)
+  final_cart = apply_clearance(applied_coupons)
+  
+  cart_total = 0
+
+  final_cart.each do |item_name, value|
+    cart_total += value[:price] * value[:count]
+  end
+  
+  cart_total > 100 ? cart_total * 0.9 : cart_total
+  
 end
